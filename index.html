@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Wordle Solver</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="language-selector">
+        <label for="language">Select Language:</label>
+        <select id="language">
+            <option value="">--Select--</option>
+            <option value="EN">English</option>
+            <option value="PL">Polski</option>
+        </select>
+    </div>
     <div class="container">
         <div class="board">
         </div>
@@ -14,8 +22,6 @@
             </ul>
         </div>
     </div>
-
-    <script src="words.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
