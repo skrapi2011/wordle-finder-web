@@ -1,4 +1,4 @@
-let wordList = [];
+let wordList = []; // This will be set after loading the language file
 let board = [];
 const wordListElement = document.getElementById('word-list');
 const boardElement = document.querySelector('.board');
@@ -51,9 +51,15 @@ function initializeBoard() {
             tile.setAttribute('data-row', row);
             tile.setAttribute('data-col', col);
             tile.setAttribute('contenteditable', 'true');
+
+            // Event listeners
             tile.addEventListener('input', handleInput);
             tile.addEventListener('click', handleClick);
             tile.addEventListener('keydown', handleKeyDown);
+
+            // Right-click event listener
+            tile.addEventListener('contextmenu', handleRightClick);
+
             board[row][col] = tile;
             boardElement.appendChild(tile);
         }
@@ -71,17 +77,9 @@ function handleInput(e) {
 function handleClick(e) {
     const tile = e.target;
     if (e.shiftKey) {
-        // Cycle through colors
-        if (tile.style.backgroundColor === presentColor) {
-            tile.style.backgroundColor = correctColor;
-        } else if (tile.style.backgroundColor === correctColor) {
-            tile.style.backgroundColor = tileBackgroundColor;
-        } else {
-            tile.style.backgroundColor = presentColor;
-        }
-        updateWordList();
+        cycleTileColor(tile); // Cycle through colors when Shift+Click
     } else {
-        tile.focus();
+        tile.focus(); // Focus the tile on normal click
     }
 }
 
@@ -107,6 +105,26 @@ function handleKeyDown(e) {
         moveToNextTile(tile);
     }
     updateWordList();
+}
+
+function handleRightClick(e) {
+    e.preventDefault(); // Prevent the default right-click menu
+    const tile = e.target;
+    cycleTileColor(tile);
+}
+
+function cycleTileColor(tile) {
+    const currentColor = tile.style.backgroundColor || tileBackgroundColor;
+
+    // Cycle through the colors: default → yellow → green → default
+    if (currentColor === tileBackgroundColor) {
+        tile.style.backgroundColor = presentColor; // Change to yellow
+    } else if (currentColor === presentColor) {
+        tile.style.backgroundColor = correctColor; // Change to green
+    } else {
+        tile.style.backgroundColor = tileBackgroundColor; // Change back to default
+    }
+    updateWordList(); // Update the word list based on new colors
 }
 
 function moveToNextTile(tile) {
