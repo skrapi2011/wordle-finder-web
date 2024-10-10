@@ -1,9 +1,25 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #121213;
-    color: #D7DADC;
+    background-color: #F0F0F0; /* Light gray background */
+    color: #000000;            /* Black text */
     font-family: Arial, sans-serif;
+}
+
+.language-selector {
+    text-align: center;
+    margin-top: 20px;
+    color: #000000; /* Black text */
+}
+
+.language-selector label, .language-selector select {
+    font-size: 18px;
+    margin: 5px;
+    color: #000000;
+    background-color: #ADD8E6; /* Light blue background */
+    border: 1px solid #404040;
+    border-radius: 3px;
+    padding: 5px;
 }
 
 .container {
@@ -19,34 +35,40 @@ body {
     grid-template-columns: repeat(5, 60px);
     grid-template-rows: repeat(6, 60px);
     gap: 10px;
+    background-color: #004080; /* Blue background */
+    padding: 10px;
+    border-radius: 5px;
 }
 
 .tile {
     width: 60px;
     height: 60px;
-    background-color: #3A3A3C;
-    color: #D7DADC;
+    background-color: #FFFFFF; /* White tiles */
+    color: #000000;            /* Black text */
     font-size: 24px;
     text-transform: uppercase;
     text-align: center;
     line-height: 60px;
-    border: 1px solid #404040;
+    border: 1px solid #000000; /* Black border */
     cursor: pointer;
     user-select: none;
 }
 
 .tile.correct {
-    background-color: #538D4E;
+    background-color: #0000FF; /* Blue for correct letters */
 }
 
 .tile.present {
-    background-color: #B59F3B;
+    background-color: #FFA500; /* Orange for present letters */
 }
 
 .word-list {
     flex: 1;
     max-height: 400px;
     overflow-y: auto;
+    background-color: #D3D3D3; /* Light gray background */
+    padding: 10px;
+    border-radius: 5px;
 }
 
 .word-list ul {
@@ -58,4 +80,5 @@ body {
     font-size: 24px;
     text-align: center;
     padding: 5px 0;
+    color: #000000; /* Black text */
 }
