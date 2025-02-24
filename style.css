@@ -57,7 +57,7 @@ body {
 
 .word-list {
     width: 350px;
-    max-height: 400px;
+    height: 410px;
     overflow-y: auto;
     background-color: #3A3A3C;
     padding: 10px;
