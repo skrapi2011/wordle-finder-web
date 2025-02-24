@@ -1,4 +1,5 @@
-let wordList = []; // This will be set after loading the language file
+const languagesCache = {};
+let wordList = [];
 let board = [];
 const wordListElement = document.getElementById('word-list');
 const boardElement = document.querySelector('.board');
@@ -7,8 +8,10 @@ const languageSelector = document.getElementById('language');
 const correctColor = '#538D4E';
 const presentColor = '#B59F3B';
 const tileBackgroundColor = '#3A3A3C';
+const correctColorRGB = "rgb(83, 141, 78)";
+const presentColorRGB = "rgb(181, 159, 59)";
+const tileBackgroundColorRGB = "rgb(58, 58, 60)";
 
-// Hide the board and word list until a language is selected
 document.querySelector('.container').style.display = 'none';
 
 languageSelector.addEventListener('change', (e) => {
@@ -19,30 +22,39 @@ languageSelector.addEventListener('change', (e) => {
 });
 
 function loadLanguage(lang) {
-    fetch(`languages/${lang}.txt`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.text();
-        })
-        .then(text => {
-            wordList = text.split('\n').map(word => word.trim().toLowerCase()).filter(word => word.length === 5);
-            initializeBoard();
-            document.querySelector('.container').style.display = 'flex';
-            updateWordList();
-        })
-        .catch(error => {
-            console.error('Error loading word list:', error);
-            alert('Error loading word list. Please try again.');
-        });
+    if (languagesCache[lang]) {
+        wordList = languagesCache[lang];
+        initializeBoard();
+        document.querySelector('.container').style.display = 'flex';
+        updateWordList();
+    } else {
+        fetch(`languages/${lang}.txt`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.text();
+            })
+            .then(text => {
+                const words = text.split('\n')
+                    .map(word => word.trim().toLowerCase())
+                    .filter(word => word.length === 5);
+                languagesCache[lang] = words;
+                wordList = words;
+                initializeBoard();
+                document.querySelector('.container').style.display = 'flex';
+                updateWordList();
+            })
+            .catch(error => {
+                console.error('Error loading word list:', error);
+                alert('Error loading word list. Please try again.');
+            });
+    }
 }
 
 function initializeBoard() {
-    // Clear previous board if any
     boardElement.innerHTML = '';
     board = [];
-
     for (let row = 0; row < 6; row++) {
         board[row] = [];
         for (let col = 0; col < 5; col++) {
@@ -51,15 +63,10 @@ function initializeBoard() {
             tile.setAttribute('data-row', row);
             tile.setAttribute('data-col', col);
             tile.setAttribute('contenteditable', 'true');
-
-            // Event listeners
             tile.addEventListener('input', handleInput);
             tile.addEventListener('click', handleClick);
             tile.addEventListener('keydown', handleKeyDown);
-
-            // Right-click event listener
             tile.addEventListener('contextmenu', handleRightClick);
-
             board[row][col] = tile;
             boardElement.appendChild(tile);
         }
@@ -77,9 +84,9 @@ function handleInput(e) {
 function handleClick(e) {
     const tile = e.target;
     if (e.shiftKey) {
-        cycleTileColor(tile); // Cycle through colors when Shift+Click
+        cycleTileColor(tile);
     } else {
-        tile.focus(); // Focus the tile on normal click
+        tile.focus();
     }
 }
 
@@ -87,7 +94,6 @@ function handleKeyDown(e) {
     const tile = e.target;
     const key = e.key;
     const isLetter = key.length === 1 && key.match(/[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/i);
-
     if (e.key === 'Backspace') {
         if (tile.textContent === '') {
             moveToPreviousTile(tile);
@@ -108,23 +114,21 @@ function handleKeyDown(e) {
 }
 
 function handleRightClick(e) {
-    e.preventDefault(); // Prevent the default right-click menu
+    e.preventDefault();
     const tile = e.target;
     cycleTileColor(tile);
 }
 
 function cycleTileColor(tile) {
-    const currentColor = tile.style.backgroundColor || tileBackgroundColor;
-
-    // Cycle through the colors: default → yellow → green → default
-    if (currentColor === tileBackgroundColor) {
-        tile.style.backgroundColor = presentColor; // Change to yellow
-    } else if (currentColor === presentColor) {
-        tile.style.backgroundColor = correctColor; // Change to green
+    const computedColor = window.getComputedStyle(tile).backgroundColor;
+    if (computedColor === tileBackgroundColorRGB) {
+        tile.style.backgroundColor = presentColor;
+    } else if (computedColor === presentColorRGB) {
+        tile.style.backgroundColor = correctColor;
     } else {
-        tile.style.backgroundColor = tileBackgroundColor; // Change back to default
+        tile.style.backgroundColor = tileBackgroundColor;
     }
-    updateWordList(); // Update the word list based on new colors
+    updateWordList();
 }
 
 function moveToNextTile(tile) {
@@ -147,98 +151,139 @@ function moveToPreviousTile(tile) {
     }
 }
 
-function updateWordList() {
-    const greens = {};
-    const yellows = {};
-    const grays = new Set();
-    const minCounts = {};
-    const maxCounts = {};
+function clearBoard() {
+    for (let row = 0; row < board.length; row++) {
+        for (let col = 0; col < board[row].length; col++) {
+            board[row][col].textContent = '';
+            board[row][col].style.backgroundColor = tileBackgroundColor;
+        }
+    }
+    updateWordList();
+}
 
+document.getElementById('clear-button').addEventListener('click', clearBoard);
+
+function isLetter(c) {
+    return /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]$/.test(c);
+}
+
+function findGreenLetters(listToFind, regexArray) {
+    let result = [];
+    listToFind.forEach(word => {
+        let matchedCount = 0;
+        let totalRequired = 0;
+        for (let i = 0; i < regexArray.length; i++) {
+            const c = regexArray[i];
+            if (isLetter(c)) {
+                totalRequired++;
+                if (word[i] === c) {
+                    matchedCount++;
+                }
+            }
+        }
+        if (matchedCount === totalRequired) {
+            result.push(word);
+        }
+    });
+    return result;
+}
+
+function findYellow(listToFind, regex) {
+    let tempList = [];
+    const lettersOnly = regex.replace(/_/g, '');
+    const requiredCount = lettersOnly.length;
+    const regexArray = regex.split('');
+    listToFind.forEach(word => {
+        let found = 0;
+        for (let i = 0; i < regexArray.length; i++) {
+            const c = regexArray[i];
+            if (c !== '_') {
+                if (word.includes(c) && word[i] !== c) {
+                    found++;
+                }
+            }
+        }
+        if (found === requiredCount) {
+            tempList.push(word);
+        }
+    });
+    return tempList.length === 0 ? listToFind : tempList;
+}
+
+function countOccurrences(word, letter) {
+    let count = 0;
+    for (const c of word) {
+        if (c === letter) {
+            count++;
+        }
+    }
+    return count;
+}
+
+function findGray(listToFind, grayRegex, nonGray) {
+    let tempList = [];
+    const requiredCounts = {};
+    for (const c of nonGray) {
+        requiredCounts[c] = (requiredCounts[c] || 0) + 1;
+    }
+    const lettersToCheck = new Set((nonGray + grayRegex).split(''));
+    listToFind.forEach(word => {
+        let valid = true;
+        for (const letter of lettersToCheck) {
+            const countInWord = countOccurrences(word, letter);
+            const required = requiredCounts[letter] || 0;
+            if (countInWord !== required) {
+                valid = false;
+                break;
+            }
+        }
+        if (valid) {
+            tempList.push(word);
+        }
+    });
+    return tempList.length === 0 ? listToFind : tempList;
+}
+
+function updateWordList() {
+    let results = [...wordList];
     for (let row = 0; row < 6; row++) {
+        let anyFilled = false;
+        for (let col = 0; col < 5; col++) {
+            if (board[row][col].textContent.trim() !== '') {
+                anyFilled = true;
+                break;
+            }
+        }
+        if (!anyFilled) {
+            continue;
+        }
+        let greenPattern = "_____".split('');
+        let yellowPattern = "_____".split('');
+        let grayString = "";
         for (let col = 0; col < 5; col++) {
             const tile = board[row][col];
             const text = tile.textContent.trim().toLowerCase();
             if (text.length === 1) {
                 const c = text;
-                const bgColor = tile.style.backgroundColor || tileBackgroundColor;
-                if (bgColor === correctColor) {
-                    greens[col] = c;
-                    minCounts[c] = (minCounts[c] || 0) + 1;
-                } else if (bgColor === presentColor) {
-                    yellows[col] = yellows[col] || [];
-                    yellows[col].push(c);
-                    minCounts[c] = (minCounts[c] || 0) + 1;
-                } else if (bgColor === tileBackgroundColor) {
-                    grays.add(c);
+                const bgColor = window.getComputedStyle(tile).backgroundColor;
+                if (bgColor === correctColorRGB) {
+                    greenPattern[col] = c;
+                } else if (bgColor === presentColorRGB) {
+                    yellowPattern[col] = c;
+                } else {
+                    grayString += c;
                 }
             }
         }
+        results = findGreenLetters(results, greenPattern);
+        results = findYellow(results, yellowPattern.join(''));
+        const nonGray = (greenPattern.join('') + yellowPattern.join('')).replace(/_/g, '');
+        results = findGray(results, grayString, nonGray);
     }
-
-    // Set max counts for gray letters
-    grays.forEach(c => {
-        const maxCount = minCounts[c] || 0;
-        maxCounts[c] = maxCount;
-    });
-
-    // Remove green and yellow letters from gray letters
-    Object.values(greens).forEach(c => grays.delete(c));
-    Object.values(yellows).flat().forEach(c => grays.delete(c));
-
-    const filteredWords = wordList.filter(word => {
-        return isValidWord(word, greens, yellows, grays, minCounts, maxCounts);
-    });
-
-    // Update the word list display
     wordListElement.innerHTML = '';
-    filteredWords.forEach(word => {
+    results.forEach(word => {
         const li = document.createElement('li');
         li.textContent = word.toUpperCase();
         wordListElement.appendChild(li);
     });
-}
-
-function isValidWord(word, greens, yellows, grays, minCounts, maxCounts) {
-    const wordCounts = {};
-    const letters = word.split('');
-
-    // Check green letters and build wordCounts
-    for (let i = 0; i < letters.length; i++) {
-        const c = letters[i];
-        wordCounts[c] = (wordCounts[c] || 0) + 1;
-
-        if (greens[i]) {
-            if (greens[i] !== c) {
-                return false;
-            }
-        }
-    }
-
-    // Check yellow letters
-    for (const [pos, chars] of Object.entries(yellows)) {
-        const index = parseInt(pos);
-        for (const c of chars) {
-            if (letters[index] === c || !word.includes(c)) {
-                return false;
-            }
-        }
-    }
-
-    // Check gray letters
-    for (const c of grays) {
-        const countInWord = wordCounts[c] || 0;
-        const maxCount = maxCounts[c] || 0;
-        if (countInWord > maxCount) {
-            return false;
-        }
-    }
-
-    // Check minimum counts
-    for (const [c, minCount] of Object.entries(minCounts)) {
-        if ((wordCounts[c] || 0) < minCount) {
-            return false;
-        }
-    }
-
-    return true;
 }
