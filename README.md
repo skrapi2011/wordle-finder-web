@@ -12,4 +12,4 @@ It provides a simple and efficient interface for word filtering.
 ## 🛠️ Technologies Used
 - **HTML, CSS, JavaScript**
 
-[Check it out here!](https://skrapi2011.github.io/wordleFinderWeb/)
+[Check it out here!](https://skrapi2011.github.io/wordle-finder-web/)
