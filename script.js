@@ -67,11 +67,49 @@ function initializeBoard() {
             tile.addEventListener('click', handleClick);
             tile.addEventListener('keydown', handleKeyDown);
             tile.addEventListener('contextmenu', handleRightClick);
+
+            tile.addEventListener('touchstart', handleTouchStart);
+            tile.addEventListener('touchend', handleTouchEnd);
+            tile.addEventListener('touchcancel', handleTouchCancel);
+            tile.addEventListener('touchmove', handleTouchMove);
+
             board[row][col] = tile;
             boardElement.appendChild(tile);
         }
     }
 }
+
+function handleTouchStart(e) {
+    const tile = e.target;
+    tile.longPressTimer = setTimeout(() => {
+        cycleTileColor(tile);
+    }, 500);
+}
+
+function handleTouchEnd(e) {
+    const tile = e.target;
+    if (tile.longPressTimer) {
+        clearTimeout(tile.longPressTimer);
+        tile.longPressTimer = null;
+    }
+}
+
+function handleTouchCancel(e) {
+    const tile = e.target;
+    if (tile.longPressTimer) {
+        clearTimeout(tile.longPressTimer);
+        tile.longPressTimer = null;
+    }
+}
+
+function handleTouchMove(e) {
+    const tile = e.target;
+    if (tile.longPressTimer) {
+        clearTimeout(tile.longPressTimer);
+        tile.longPressTimer = null;
+    }
+}
+
 
 function handleInput(e) {
     const tile = e.target;
@@ -114,6 +152,10 @@ function handleKeyDown(e) {
 }
 
 function handleRightClick(e) {
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+        e.preventDefault();
+        return;
+    }
     e.preventDefault();
     const tile = e.target;
     cycleTileColor(tile);
