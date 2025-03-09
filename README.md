@@ -1,5 +1,7 @@
 # Wordle Finder Web
 
+[Check it out!](https://skrapi2011.github.io/wordle-finder-web/)
+
 ## 📌 Overview
 Wordle Finder Web is a **web application** designed to assist in solving Wordle puzzles by suggesting possible words based on known and excluded letters.  
 It provides a simple and efficient interface for word filtering.
@@ -11,5 +13,3 @@ It provides a simple and efficient interface for word filtering.
 
 ## 🛠️ Technologies Used
 - **HTML, CSS, JavaScript**
-
-[Check it out here!](https://skrapi2011.github.io/wordle-finder-web/)
