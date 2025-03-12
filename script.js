@@ -216,25 +216,16 @@ function isLetter(c) {
     return /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]$/.test(c);
 }
 
-function findGreenLetters(listToFind, regexArray) {
-    let result = [];
-    listToFind.forEach(word => {
-        let matchedCount = 0;
-        let totalRequired = 0;
-        for (let i = 0; i < regexArray.length; i++) {
-            const c = regexArray[i];
-            if (isLetter(c)) {
-                totalRequired++;
-                if (word[i] === c) {
-                    matchedCount++;
-                }
+function findGreenLetters(listToFind, pattern) {
+    return listToFind.filter(word => {
+        for (let i = 0; i < pattern.length; i++) {
+            const c = pattern[i];
+            if (c !== '_' && isLetter(c) && word[i] !== c) {
+                return false;
             }
         }
-        if (matchedCount === totalRequired) {
-            result.push(word);
-        }
+        return true;
     });
-    return result;
 }
 
 function findYellow(listToFind, regex) {
@@ -273,19 +264,30 @@ function findGray(listToFind, grayRegex, nonGray) {
     let tempList = [];
     const requiredCounts = {};
     for (const c of nonGray) {
-        requiredCounts[c] = (requiredCounts[c] || 0) + 1;
+        if (c !== '_') {
+            requiredCounts[c] = (requiredCounts[c] || 0) + 1;
+        }
     }
-    const lettersToCheck = new Set((nonGray + grayRegex).split(''));
+
     listToFind.forEach(word => {
         let valid = true;
-        for (const letter of lettersToCheck) {
-            const countInWord = countOccurrences(word, letter);
-            const required = requiredCounts[letter] || 0;
-            if (countInWord !== required) {
+
+        for (const [letter, count] of Object.entries(requiredCounts)) {
+            if (countOccurrences(word, letter) < count) {
                 valid = false;
                 break;
             }
         }
+        
+        if (valid) {
+            for (const letter of grayRegex) {
+                if (countOccurrences(word, letter) > 0 && !requiredCounts[letter]) {
+                    valid = false;
+                    break;
+                }
+            }
+        }
+
         if (valid) {
             tempList.push(word);
         }
