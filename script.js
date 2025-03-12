@@ -14,6 +14,13 @@ const tileBackgroundColorRGB = "rgb(58, 58, 60)";
 
 document.querySelector('.container').style.display = 'none';
 
+let debounceTimer;
+
+function updateWordListDebounced() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updateWordList, 250);
+}
+
 languageSelector.addEventListener('change', (e) => {
     const selectedLanguage = e.target.value;
     if (selectedLanguage) {
@@ -26,7 +33,7 @@ function loadLanguage(lang) {
         wordList = languagesCache[lang];
         initializeBoard();
         document.querySelector('.container').style.display = 'flex';
-        updateWordList();
+        updateWordListDebounced();
     } else {
         fetch(`languages/${lang}.txt`)
             .then(response => {
@@ -43,7 +50,7 @@ function loadLanguage(lang) {
                 wordList = words;
                 initializeBoard();
                 document.querySelector('.container').style.display = 'flex';
-                updateWordList();
+                updateWordListDebounced();
             })
             .catch(error => {
                 console.error('Error loading word list:', error);
@@ -116,7 +123,7 @@ function handleInput(e) {
     const text = tile.textContent.trim().toUpperCase();
     tile.textContent = text.charAt(0);
     moveToNextTile(tile);
-    updateWordList();
+    updateWordListDebounced();
 }
 
 function handleClick(e) {
@@ -148,7 +155,7 @@ function handleKeyDown(e) {
     } else if (e.key === 'ArrowRight') {
         moveToNextTile(tile);
     }
-    updateWordList();
+    updateWordListDebounced();
 }
 
 function handleRightClick(e) {
@@ -170,7 +177,7 @@ function cycleTileColor(tile) {
     } else {
         tile.style.backgroundColor = tileBackgroundColor;
     }
-    updateWordList();
+    updateWordListDebounced();
 }
 
 function moveToNextTile(tile) {
@@ -200,7 +207,7 @@ function clearBoard() {
             board[row][col].style.backgroundColor = tileBackgroundColor;
         }
     }
-    updateWordList();
+    updateWordListDebounced();
 }
 
 document.getElementById('clear-button').addEventListener('click', clearBoard);
