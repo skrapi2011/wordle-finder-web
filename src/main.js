@@ -13,7 +13,6 @@ class WordleSolver {
         this.wordList = new WordList(document.getElementById('word-list'));
         this.words = [];
         this.initializeEventListeners();
-        this.hideContainer();
     }
 
     initializeEventListeners() {
@@ -36,10 +35,6 @@ class WordleSolver {
         } catch (error) {
             alert('Error loading word list. Please try again.');
         }
-    }
-
-    hideContainer() {
-        document.querySelector('.container').style.display = 'none';
     }
 
     showContainer() {
