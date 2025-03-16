@@ -36,6 +36,8 @@ export class Board {
         tile.addEventListener('contextmenu', e => this.handleRightClick(e));
         tile.addEventListener('touchstart', e => this.handleTouchStart(e));
         tile.addEventListener('touchend', e => this.handleTouchEnd(e));
+        tile.addEventListener('touchcancel', e => this.handleTouchCancel(e));
+        tile.addEventListener('touchmove', e => this.handleTouchMove(e));
     }
 
     handleInput(e) {
@@ -47,18 +49,36 @@ export class Board {
     }
 
     handleTouchStart(e) {
-        if (REGEXES.mobile.test(navigator.userAgent)) {
-            e.target.focus();
-        }
+        const tile = e.target;
+        tile.longPressTimer = setTimeout(() => {
+            this.cycleTileColor(tile);
+        }, 500);
     }
 
     handleTouchEnd(e) {
-        if (REGEXES.mobile.test(navigator.userAgent)) {
-            const tile = e.target;
-            if (!tile.isContentEditable || tile.textContent.trim() !== '') {
-                this.cycleTileColor(tile);
-                e.preventDefault();
-            }
+        const tile = e.target;
+        if (tile.longPressTimer) {
+            clearTimeout(tile.longPressTimer);
+            tile.longPressTimer = null;
+        }
+        if (!hasContent(tile)) {
+            tile.focus();
+        }
+    }
+
+    handleTouchMove(e) {
+        const tile = e.target;
+        if (tile.longPressTimer) {
+            clearTimeout(tile.longPressTimer);
+            tile.longPressTimer = null;
+        }
+    }
+
+    handleTouchCancel(e) {
+        const tile = e.target;
+        if (tile.longPressTimer) {
+            clearTimeout(tile.longPressTimer);
+            tile.longPressTimer = null;
         }
     }
 
@@ -68,7 +88,6 @@ export class Board {
             tile.focus();
         }
     }
-
 
     handleKeyDown(e) {
         const tile = e.target;
@@ -94,10 +113,12 @@ export class Board {
     }
 
     handleRightClick(e) {
-        e.preventDefault();
-        if (!REGEXES.mobile.test(navigator.userAgent)) {
-            this.cycleTileColor(e.target);
+        if (REGEXES.mobile.test(navigator.userAgent)) {
+            e.preventDefault();
+            return;
         }
+        e.preventDefault();
+        this.cycleTileColor(e.target);
     }
 
     moveToNextTile(tile) {
@@ -136,7 +157,4 @@ export class Board {
         );
     }
 
-    getTile(row, col) {
-        return this.board[row][col];
-    }
 }
