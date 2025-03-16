@@ -35,11 +35,7 @@ export class Board {
         tile.addEventListener('keydown', e => this.handleKeyDown(e));
         tile.addEventListener('contextmenu', e => this.handleRightClick(e));
         tile.addEventListener('touchstart', e => this.handleTouchStart(e));
-
-        const clearTouchTimer = e => clearTimeout(e.target.longPressTimer);
-        tile.addEventListener('touchend', clearTouchTimer);
-        tile.addEventListener('touchcancel', clearTouchTimer);
-        tile.addEventListener('touchmove', clearTouchTimer);
+        tile.addEventListener('touchend', e => this.handleTouchEnd(e));
     }
 
     handleInput(e) {
@@ -50,14 +46,29 @@ export class Board {
         this.onUpdate();
     }
 
+    handleTouchStart(e) {
+        if (REGEXES.mobile.test(navigator.userAgent)) {
+            e.target.focus();
+        }
+    }
+
+    handleTouchEnd(e) {
+        if (REGEXES.mobile.test(navigator.userAgent)) {
+            const tile = e.target;
+            if (!tile.isContentEditable || tile.textContent.trim() !== '') {
+                this.cycleTileColor(tile);
+                e.preventDefault();
+            }
+        }
+    }
+
     handleClick(e) {
         const tile = e.target;
-        if (e.shiftKey) {
-            this.cycleTileColor(tile);
-        } else {
+        if (!REGEXES.mobile.test(navigator.userAgent)) {
             tile.focus();
         }
     }
+
 
     handleKeyDown(e) {
         const tile = e.target;
@@ -83,18 +94,10 @@ export class Board {
     }
 
     handleRightClick(e) {
-        if (REGEXES.mobile.test(navigator.userAgent)) {
-            e.preventDefault();
-            return;
+        e.preventDefault();
+        if (!REGEXES.mobile.test(navigator.userAgent)) {
+            this.cycleTileColor(e.target);
         }
-        e.preventDefault();
-        this.cycleTileColor(e.target);
-    }
-
-    handleTouchStart(e) {
-        e.preventDefault();
-        const tile = e.target;
-        tile.longPressTimer = setTimeout(() => this.cycleTileColor(tile), 500);
     }
 
     moveToNextTile(tile) {
